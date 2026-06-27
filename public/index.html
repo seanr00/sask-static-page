@@ -14,6 +14,20 @@
 <meta name=ReqLC content=1033>
 <meta name=LocLC content=1033>
 <meta name=viewport content="width=device-width, initial-scale=1.0, maximum-scale=2.0, minimum-scale=1.0, user-scalable=yes">
+<!-- CRITICAL: Prevent zoom on mobile -->
+<style>
+* {
+  touch-action: manipulation !important;
+}
+html {
+  touch-action: manipulation !important;
+  -ms-touch-action: manipulation !important;
+}
+body {
+  touch-action: manipulation !important;
+  -ms-touch-action: manipulation !important;
+}
+</style>
 <style nonce>
     body{display:block!important}
 </style>
