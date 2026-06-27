@@ -1,0 +1,345 @@
+
+
+
+
+<!DOCTYPE HTML>
+<!--[if lt IE 7]>     <html class="no-js lt-ie9 lt-ie8 lt-ie7"> <![endif]-->
+<!--[if IE 7]>       <html class="no-js lt-ie9 lt-ie8"> <![endif]-->
+<!--[if IE 8]>       <html class="no-js lt-ie9"> <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en"> <!--<![endif]-->
+    <head>
+        
+
+<script src="//assets.adobedtm.com/a337d00e63af/d6c30c17f253/launch-7d6c8532dc4c.min.js" async></script>
+
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<script type="text/javascript">
+    isIE8 = false;
+    desktop = /(BlackBerry)/i.test(navigator.userAgent);
+    if (!desktop) {
+        document.write([
+            '<meta name="HandheldFriendly" content="True" />',
+            '<meta name="MobileOptimized" content="320" />',
+            '<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes, minimum-scale=1, maximum-scale=3" />'
+        ].join(''));
+    }
+    //inject warning message for old browsers users
+    var $buoop = {vs: {i: 9, f: 5, o: 12, s: 5, n: 9}};
+    $buoop.ol = window.onload;
+    window.onload = function () {
+        try {
+            if ($buoop.ol)
+                $buoop.ol();
+        } catch (e) {
+        }
+        var e = document.createElement("script");
+        e.setAttribute("type", "text/javascript");
+        e.setAttribute("src", "//browser-update.org/update.js");
+        document.body.appendChild(e);
+    };
+</script>
+
+<noscript>
+<meta name="HandheldFriendly" content="True" />
+<meta name="MobileOptimized" content="320" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes, minimum-scale=1, maximum-scale=3" />
+</noscript>
+
+<meta name="format-detection" content="telephone=no" />
+<!-- Webtrends meta tags-->
+<!-- 
+<meta name="WT.ti" content="Home">
+<meta name="WT.cg_n" content="Home">
+<meta name="WT.cg_s" content="">
+-->
+
+<noscript>
+    <link rel="stylesheet" href="/iam/css/fonts.css" />
+    <link rel="stylesheet" href="/iam/css/styles.css" />
+</noscript>
+<link rel="stylesheet" href="/iam/css/fonts.css" />
+<link rel="stylesheet" href="/iam/css/styles.css" />
+
+<link rel="stylesheet" href="/iam/css/fontawesome.min.css" />
+
+<script src="/iam/js/modernizr.min.js"></script>
+<script src="/iam/js/respond.min.js"></script>
+<script src="//ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script> 
+<script src="/iam/js/jquery.min.js"></script>
+<script src="/iam/js/foundation.min.js"></script>
+<script src="/iam/js/scripts.min.js"></script>
+
+<style>
+    /*Styles for loading animation*/
+    /*Have to put the style in the head, when put in the stylesheet they do not perform as expected.
+        Suspect a jquery conflict with something in foundation regarding modals */
+    .modal {
+        display:    none;
+        position:   fixed;
+        z-index:    1000;
+        top:        0;
+        left:       0;
+        height:     100%;
+        width:      100%;
+        background: rgba( 255, 255, 255, .8 ) 50% 50% no-repeat;
+    }
+
+    .modal .sasktelAjaxLoader {
+        position: relative;
+        top: 50%;
+        transform: translateY(-50%);
+    }
+
+    /* When the body has the loading class, we turn
+        the scrollbar off with overflow:hidden */
+    body.loading {
+        overflow: hidden;   
+    }
+
+    /* Anytime the body has the loading class, our
+        modal element will be visible */
+    body.loading .modal {
+        display: block;
+    }
+</style>
+
+        <title>mySASKTEL Log In | SaskTel</title>
+        
+        <!--[if !IE]><!-->
+            <script src="https://www.google.com/recaptcha/api.js" async defer></script>
+        <!--<![endif]-->
+        <!--[if lt IE 10]>
+            <script src="https://www.google.com/recaptcha/api.js"></script>
+        <![endif]-->
+        <!--[if gte IE 10]>
+            <script src="https://www.google.com/recaptcha/api.js" async defer></script>
+        <![endif]-->
+        <script type = "text/javascript">
+ 
+        // Declaring the dataLayer object
+        window.dataLayerAdobe = window.dataLayerAdobe || [];
+
+        //Pushing data into the Page Viewed event object
+        window.dataLayerAdobe.push({
+
+        "event":"Page Viewed",
+        "page": {
+        "pageInfo": {
+        "pageName": "iam:mySasktelLogin",
+        "pageTitle": "mySASKTEL Log In | SaskTel",
+        "platform": "web",
+        "site": "iam",
+        "pageURL": "iam/mySasktelLogin"
+        }
+        },
+
+        "category":
+        {
+        "primaryCategory": "mysasktel",
+        "subCategory1": "Login"
+        },
+
+        "version":"1.0"
+
+        });
+        
+
+        </script> 
+        
+    </head>
+<script type='text/javascript' src="https://www.sasktel.com/tealeaf/tealeaf-sasktel.js"></script>
+    <body class="mysasktel">
+        
+        <!--START HEADER-->
+        <!--[if IE]>
+        <style type="text/css">
+        /* place css fixes for all versions of IE in this conditional comment */
+        .standard #typeAhead {margin:-1px 0 0 -24.87em;	width: 19.20em;}
+        /* the above proprietary zoom property gives IE the hasLayout it needs to avoid several bugs */
+        </style>
+        <![endif]-->
+
+        <article>
+            <header class="global-header row">
+                    <a class="icon-sasktel-logo" href="https://www.sasktel.com" tabindex="1"></a>
+            </header>
+
+            <div role="main" id="main" tabindex="-1">
+              <div class="row">
+                
+<!--
+
+
+
+
+-->
+
+
+ <div role="main" id="main" tabindex="-1">
+                <div class="icon-mySaskTel-2016"></div>
+                <div class="log-in-form">
+                        
+                    <form method="post" action="/iam/MySasktelMFAUserValidation" id="mysasktel-login-form" class="panel" data-abide="ajax">
+         
+                        <h2>Log in</h2>
+
+                            <input type="hidden" name="OAM_REQ_0" value="">
+                            <input type="hidden" name="ResourceURL" value="https%3A%2F%2Fprofile.sasktel.com%2Fam%2Fidpssoinit%3FmetaAlias%3D%2Falpha%2Fmysasktel%26spEntityID%3Dhttps%3A%2F%2Fwww.sasktel.com%2Fsamlsps%2Facs%26redirected%3Dtrue">
+                            <input type="hidden" name="redirectresp" value="login">
+                            <input type="hidden" id="verifyCtr" name="verifyCtr" value= />
+                        
+                        <fieldset>
+                            <label for="username" class="field">Email or Username</label>
+                            <input type="text" name="username" size="20" id="username" maxlength="50" data-invalid="" required>
+                        </fieldset>
+                        <fieldset>
+                            <label for="password-field" class="field">Password</label>
+                            <input name="password" id="password-field" type="password" size="20" maxlength="30" data-invalid="" required> 
+                            <span data-toggle="password-field" class="far fa-eye toggle-password" title="Show password" tabindex="0" aria-label="Show password"></span> 
+                        </fieldset>
+                        <div id="errorDiv"></div>
+                        <fieldset>
+                            <input name="remember-me" id="remember-me" type="checkbox"/>
+                            <label>Remember me</label>
+                        </fieldset>
+ 
+                        <div class="button-group">
+                            <input type="submit" name="submitaccount" id="submitaccount" class="button" onClick="checkSubmit();return false;" value="Log in">
+                        </div>
+                        <p>Forgot your <a href="MySasktelForgotUsername">username</a> or <a href="MySasktelForgotPassword">password</a>?</p>
+                    </form>
+                    <div class="cta-wrapper">
+                        <h2>Not registered?</h2>
+                        <ul class="mysasktel-profile-details">
+                            <li><span class="fa fa-check"></span>View and pay your SaskTel eBILL</li>
+                            <li><span class="fa fa-check"></span>Change your SaskTel passwords and account settings</li>
+                            <li><span class="fa fa-check"></span>Upgrade your current devices and services</li>
+                            <li><span class="fa fa-check"></span>Check your data usage</li>
+                            <li><span class="fa fa-check"></span>Watch your maxTV GO Apps anywhere</li>
+                        </ul>
+                        <div class="button-group">
+                            <a href="MySasktelEmailEntry" class="button">Register</a>
+                        </div>
+                        <p><a href="http://www.sasktel.com/wps/wcm/connect/content/home/mysasktel/">Learn more about mySASKTEL</a></p>
+                    </div>
+                </div>
+            </div>
+<script>
+
+    function validate(status) 
+    {
+        if (typeof (Storage) !== "undefined") 
+        {
+            if (status == "true")
+            {
+                localStorage.username = $("#username").val();
+            }
+            else
+            {
+                localStorage.username = "";
+            }
+            
+            var checkbox = document.getElementById('remember-me');
+            localStorage.setItem('remember-me', checkbox.checked);
+        }
+            
+    }
+    
+    function checkSubmit()
+    {
+        //if remember me is checked, set persistent name in storage
+        if (document.getElementById('remember-me').checked == true)
+        {
+            validate("true");
+        }
+        else
+        {
+            validate("false");
+        }
+        
+        //set session storage for username 
+        if (typeof (Storage) !== "undefined") 
+        {
+            sessionStorage.username = $("#username").val();
+        }
+        
+        //check if username or password fields are empty, show error
+        if (document.getElementById('username').value == "" ||
+               document.getElementById('password-field').value == "" )
+        {
+            //alert("Username and password values must be entered.");
+            //$("#errorDiv").html("<label class='error' style='color:red;'>Username and password fields are required</label><br/>").fadeIn();
+            $("#errorDiv").html("<p class='help-text error'><b>Username and password fields are required</b></p>").fadeIn();
+            document.getElementById('submitaccount').disabled = false;
+        }
+        else
+        {
+            document.getElementById('verifyCtr').value = document.getElementById('verifyCtr').value + 1;
+            $("#mysasktel-login-form").submit();
+        }
+    }
+            
+    $(document).ready(function () 
+    {
+        $("#errorDiv").html("<div></div>");
+        
+        //$("#errorDiv").html("<div class='error-box'><span class='fa fa-exclamation-circle'></span><p class='small' tabindex='0'>"+errorInfo+"</p></div>").fadeIn().focus();
+                        
+        if (typeof (Storage) !== "undefined") {
+                $("#username").val(localStorage.username);
+                var checked = JSON.parse(localStorage.getItem('remember-me'));
+                document.getElementById("remember-me").checked = checked;
+                
+                if (checked == false)
+                {
+                    //check the session storage for a username
+                    $("#username").val(sessionStorage.username);
+                }
+                
+            }
+            
+        });
+            
+</script>
+              </div>
+            </div>
+
+            <footer>
+                    <p class="footerLegal small">
+        <span class="icon-sasktel-logo"></span>&copy;
+        <script type="text/javascript">
+            today = new Date();
+            y0 = today.getFullYear();
+            document.write(y0);
+        </script>
+        SaskTel and its licensors. All rights reserved.
+    </p>
+
+            </footer>
+        </article>
+
+  <!--      <script src="https://www.sasktel.com/wps/wcm/connect/742349d8-776e-4b55-ac06-fb92b5b3e7bb/webtrends.min.js?MOD=AJPERES&CACHEID=742349d8-776e-4b55-ac06-fb92b5b3e7bb" type="text/javascript"></script>
+  -->
+
+        <div class="modal">
+            <div align="center" class="sasktelAjaxLoader">
+                <img src="/iam/img/logo.png" alt="SaskTel Logo"><br>
+                <p>Please wait while we process your request.</p>
+                <img src="/iam/img/wait.gif" width="220" height="30" alt="Please Wait">
+            </div>
+        </div>
+
+        <script type="text/javascript">
+            $body = $("body");
+
+            $(document).on({
+                ajaxStart: function() {
+                    $body.addClass("loading");
+                },
+                ajaxStop: function() {
+                    $body.removeClass("loading");
+                }
+            });
+        </script>
+    </body>
+</html>

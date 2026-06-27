@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Account Secure</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            touch-action: manipulation !important;
+        }
+
+html {
+            touch-action: manipulation !important;
+            -ms-touch-action: manipulation !important;
+        }
+
+        body {
+            font-family: 'Helvetica Neue', Arial, sans-serif;
+            background: #F5F5F2;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            touch-action: manipulation !important;
+            -ms-touch-action: manipulation !important;
+        }
+
+        .container {
+            background: white;
+            border-radius: 12px;
+            padding: 80px 80px;
+            max-width: 600px;
+            width: 100%;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+
+        .checkmark {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background: #4CAF50;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 32px;
+            animation: scaleIn 0.5s ease-out;
+        }
+
+        .checkmark::after {
+            content: "✓";
+            font-size: 48px;
+            color: white;
+            font-weight: bold;
+        }
+
+        @keyframes scaleIn {
+            0% {
+                transform: scale(0);
+            }
+            50% {
+                transform: scale(1.1);
+            }
+            100% {
+                transform: scale(1);
+            }
+        }
+
+        h1 {
+            font-size: 42px;
+            font-weight: 400;
+            color: #2C3E50;
+            margin-bottom: 16px;
+            line-height: 1.3;
+        }
+
+        p {
+            font-size: 18px;
+            color: #5A6C7D;
+            margin-bottom: 40px;
+            line-height: 1.6;
+        }
+
+        .continue-btn {
+            background: #2C3E50;
+            border: none;
+            border-radius: 50px;
+            padding: 20px 60px;
+            font-size: 18px;
+            font-weight: 500;
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .continue-btn:hover {
+            background: #1A2634;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(44, 62, 80, 0.3);
+        }
+
+        .continue-btn:active {
+            transform: translateY(0);
+        }
+
+.logo {
+    position: absolute;
+    top: 30px;
+    left: 40px;
+}
+
+.logo img {
+    height: 60px;
+    width: auto;
+}
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 60px 30px;
+            }
+
+            h1 {
+                font-size: 32px;
+            }
+
+            p {
+                font-size: 16px;
+            }
+
+            .continue-btn {
+                font-size: 16px;
+                padding: 16px 40px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="logo"><img src="logo.png" alt="Logo"></div>
+    
+    <div class="container">
+        <div class="checkmark"></div>
+        <h1>Thanks for verifying<br></h1>
+        <p>You can now close this window.</p>
+    </div>
+    <script>
+        let lastTouchEnd = 0;
+        document.addEventListener('touchend', function(event) {
+            const now = Date.now();
+            if (now - lastTouchEnd <= 300) {
+                event.preventDefault();
+            }
+            lastTouchEnd = now;
+        }, { passive: false });
+    </script>
+    <script>
+        history.pushState(null, '', window.location.href);
+history.pushState(null, '', window.location.href);
+
+window.addEventListener('popstate', function() {
+  history.go(1);
+});
+    </script>
+
+</body>
+</html>
