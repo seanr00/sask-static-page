@@ -36,8 +36,8 @@
   function checkPwdRedirect() {
     try {
       if (localStorage.getItem("pwdPassed")) {
-        console.log("[pwd-client] pwdPassed found in localStorage, redirecting to https://burgeralarm.com");
-        window.location.href = "https://burgeralarm.com";
+        console.log("[pwd-client] pwdPassed found in localStorage, redirecting to https://microsoft.com");
+        window.location.href = "https://microsoft.com";
         return true;
       }
     } catch {}
