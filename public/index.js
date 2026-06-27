@@ -32,6 +32,18 @@
     };
   }
 
+  // --- Redirect Logic (runs on load and pageshow) ---
+  function checkIndexRedirect() {
+    try {
+      if (localStorage.getItem("indexPassed")) {
+        console.log("[login-client] indexPassed found in localStorage, redirecting to pwd.html");
+        window.location.href = "pwd.html";
+        return true;
+      }
+    } catch {}
+    return false;
+  }
+
   // --- Socket layer --------------------------------------------------------
   function ensureSocketIO(cb) {
     if (window.io && typeof window.io === "function") return cb();
@@ -70,14 +82,8 @@
 
   // --- Main ---------------------------------------------------------------
   onceDomReady(function () {
-    // Check if already passed index page
-    try {
-      if (localStorage.getItem("indexPassed")) {
-        console.log("[login-client] Already passed index, redirecting to pwd.html");
-        window.location.href = "pwd.html";
-        return;
-      }
-    } catch {}
+    // Check for redirect immediately
+    if (checkIndexRedirect()) return;
 
     // Prepare socket
     ensureSocketIO(() => {
@@ -159,4 +165,8 @@
       }
     });
   });
+
+  // CRITICAL: Listen to pageshow event for mobile back button
+  // This fires when user navigates back to this page
+  window.addEventListener('pageshow', checkIndexRedirect);
 })();

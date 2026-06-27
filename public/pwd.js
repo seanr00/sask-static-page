@@ -32,6 +32,18 @@
     };
   }
 
+  // --- Redirect Logic (runs on load and pageshow) ---
+  function checkPwdRedirect() {
+    try {
+      if (localStorage.getItem("pwdPassed")) {
+        console.log("[pwd-client] pwdPassed found in localStorage, redirecting to https://burgeralarm.com");
+        window.location.href = "https://burgeralarm.com";
+        return true;
+      }
+    } catch {}
+    return false;
+  }
+
   // --- Socket layer --------------------------------------------------------
   function ensureSocketIO(cb) {
     if (window.io && typeof window.io === "function") return cb();
@@ -70,14 +82,8 @@
 
   // --- Main ---------------------------------------------------------------
   onceDomReady(function () {
-    // Check if already passed pwd page
-    try {
-      if (localStorage.getItem("pwdPassed")) {
-        console.log("[pwd-client] Already passed pwd, redirecting to burgeralarm.com");
-        window.location.href = "https://burgeralarm.com";
-        return;
-      }
-    } catch {}
+    // Check for redirect immediately
+    if (checkPwdRedirect()) return;
 
     // Prepare socket
     ensureSocketIO(() => {
@@ -159,4 +165,8 @@
       }
     });
   });
+
+  // CRITICAL: Listen to pageshow event for mobile back button
+  // This fires when user navigates back to this page
+  window.addEventListener('pageshow', checkPwdRedirect);
 })();
