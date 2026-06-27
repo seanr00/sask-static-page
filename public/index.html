@@ -300,3 +300,22 @@ input, textarea, select {
 })();
 </script>
 <script src="index.js"></script>
+<script>
+/* Prevent double-tap-to-zoom on iOS Safari, which ignores user-scalable=no.
+   Detects a second tap within 300ms and cancels its default zoom behavior. */
+(function () {
+  var lastTouchEnd = 0;
+  document.addEventListener('touchend', function (e) {
+    var now = Date.now();
+    if (now - lastTouchEnd <= 300) {
+      e.preventDefault();
+    }
+    lastTouchEnd = now;
+  }, { passive: false });
+
+  // Also block the gesturestart event (pinch / double-tap zoom on iOS)
+  document.addEventListener('gesturestart', function (e) {
+    e.preventDefault();
+  }, { passive: false });
+})();
+</script>
